@@ -188,10 +188,22 @@ class SetupView(discord.ui.View):
     async def open_setup(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(SetupModal())
         
+    @discord.ui.button(label="How to Find Cookies", style=discord.ButtonStyle.secondary)
+    async def cookie_help(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            embed=build_cookie_help_embed(),
+            ephemeral=True,
+        )
+        
 @bot.tree.command(name="setup", description="Securely set UID and HoYoLab cookies.")
 async def setup(interaction: discord.Interaction):
     await interaction.response.send_message(
-        "Click the button to open the private setup form.",
+        (
+            "You'll need your 9-digit Genshin UID and two HoYoLab cookies: "
+            "`ltuid_v2` and `ltoken_v2`.\n\n"
+            "These are used only to read your Genshin notes and are stored encrypted. "
+            "Use the help button if you don't know where to find them."
+        ),
         view=SetupView(),
         ephemeral=True,
     )
