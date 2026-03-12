@@ -12,6 +12,9 @@ from storage import (
     decrypt_value,
 )
 
+# Consts
+COOKIE_GUIDE_URL = "https://github.com/ecgregorio/resinly#finding-your-hoyolab-cookies"
+
 # load .env file
 load_dotenv()
 token = os.getenv('DISCORD_TOKEN')
@@ -184,6 +187,16 @@ def build_cookie_help_embed() -> discord.Embed:
     return embed
 
 class SetupView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=300)
+        self.add_item(
+            discord.ui.Button(
+                label="Full Cookie Guide",
+                style=discord.ButtonStyle.link,
+                url=COOKIE_GUIDE_URL,
+            )
+        )
+        
     @discord.ui.button(label="Open Secure Setup Form", style=discord.ButtonStyle.primary)
     async def open_setup(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.send_modal(SetupModal())
@@ -202,7 +215,7 @@ async def setup(interaction: discord.Interaction):
             "You'll need your 9-digit Genshin UID and two HoYoLab cookies: "
             "`ltuid_v2` and `ltoken_v2`.\n\n"
             "These are used only to read your Genshin notes and are stored encrypted. "
-            "Use the help button if you don't know where to find them."
+            "Use the help button if you don't know where to find them, or open the Full Cookie Guide on Github."
         ),
         view=SetupView(),
         ephemeral=True,
