@@ -34,6 +34,36 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 ## Slash Setup
 - `/setup` opens a private setup flow (ephemeral button + modal) for UID and cookie input.
 
+## Finding Your HoYoLab Cookies
+
+<details>
+  <summary>Chrome / Edge</summary>
+
+  1. Sign in to [HoYoLab](https://www.hoyolab.com).
+  2. Press `F12` -> **Application** tab.
+  3. Open the Application tab (or use `>>` if hidden).
+  4. In the left sidebar, open Cookies.
+  5. Select the HoYoLab site
+  6. Find `ltuid_v2` and `ltoken_v2`.
+  7. Copy values only into Resinly private setup.
+</details>
+<details>
+  <summary>Firefox</summary>
+
+  1. Sign in to [HoYoLab](https://www.hoyolab.com).
+  2. Press `F12`.
+  3. Open the Storage tab.
+  4. In the left sidebar, open Cookies.
+  5. Select the HoYoLab site
+  6. Find `ltuid_v2` and `ltoken_v2`.
+  7. Copy values only into Resinly private setup.
+</details>
+
+> ⚠️ **Safety Warning**:
+> - Treat these as passwords.
+> - ***Never*** post cookies in public channels.
+> - If exposed, log out of HoYoLab and sign back in.
+
 ## Security Guarantees
 - Resinly does not ask users to post cookies in public channels.
 - Cookie setup is DM-only or via private slash modal flow.
