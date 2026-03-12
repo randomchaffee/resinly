@@ -235,11 +235,11 @@ async def resin(ctx):
     user_id = str(ctx.author.id)
     state = data.get(user_id, {})
     
-    uid = state.get("uid") or default_genshin_uid
+    uid = state.get("uid")
     
-    # send message if uid not found/null
+    # require per-user setup for UID to avoid falling back to default credentials
     if not uid:
-        await ctx.send("No UID found. Use `!setuid` <your_uid> or set GENSHIN_UID in .env bru")
+        await ctx.send("Invalid credentials. No UID found for your account. Use `/setup` to configure your UID and HoYoLab cookies.")
         return
 
     try:
