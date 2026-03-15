@@ -1,6 +1,7 @@
 # modal/view/embed
 import discord
 
+from app.bot_core import bot
 from storage.storage import (
     load_subscriptions,
     save_subscriptions,
@@ -131,4 +132,17 @@ class SetupView(discord.ui.View):
             embed=build_cookie_help_embed(),
             ephemeral=True,
         )
- 
+
+# setup slash command 
+@bot.tree.command(name="setup", description="Securely set UID and HoYoLab cookies.")
+async def setup(interaction: discord.Interaction):
+    await interaction.response.send_message(
+        (
+            "You'll need your 9-digit Genshin UID and two HoYoLab cookies: "
+            "`ltuid_v2` and `ltoken_v2`.\n\n"
+            "These are used only to read your Genshin notes and are stored encrypted. "
+            "Use the help button if you don't know where to find them, or open the Full Cookie Guide on Github."
+        ),
+        view=SetupView(),
+        ephemeral=True,
+    )

@@ -1,11 +1,15 @@
 import logging
-from dotenv import load_dotenv
 import os
 
-from app.bot_core import bot
+from dotenv import load_dotenv
 
 # load .env file
 load_dotenv()
+
+import app.commands as _commands
+import app.ui_setup as _ui_setup
+from app.bot_core import bot
+
 token = os.getenv('DISCORD_TOKEN')
 
 # handler
