@@ -20,4 +20,4 @@ RUN useradd -m botuser \
 
 USER botuser
 
-CMD ["python", "main.py"]
+CMD ["python", "-m", "app.main"]
