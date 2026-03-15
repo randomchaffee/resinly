@@ -36,5 +36,13 @@ jobs:
             fi
 
             docker compose up -d --build
+
+            sleep 10
+
             docker compose ps
             docker compose logs --tail=100 bot
+
+            if ! docker compose ps --status running | grep -q resinly-bot; then
+              echo "Bot container is not running after deploy."
+              exit 1
+            fi

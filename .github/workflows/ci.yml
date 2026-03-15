@@ -20,7 +20,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install dependencies
         run: |
@@ -31,16 +31,9 @@ jobs:
       - name: Lint
         run: ruff check .
 
-      - name: Compile check
-        run: python -m py_compile app/main.py storage/storage.py
+      - name: Compile all app code
+        run: python -m compileall -q app storage
 
-      - name: Bot Heartbeat Commit
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.actor != 'github-actions[bot]'
+      - name: Import smoke test
         run: |
-          mkdir -p .github
-          date -u +"%Y-%m-%dT%H:%M:%SZ" > .github/actions-heartbeat.txt
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/actions-heartbeat.txt
-          git commit -m "ci: actions heartbeat check" || exit 0
-          git push
+          python -c "import app.bot_core; import app.commands; import app.ui_setup; import app.tasks"
