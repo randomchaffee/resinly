@@ -1,12 +1,6 @@
 # Resinly Deployment (EC2, Isolated from FastAPI)
 
 This bot is deployed as a separate Docker Compose project in its own EC2 directory.
-It does not share a Compose stack with `fastapi_project`.
-
-## Why This Layout
-- Isolation: bot updates cannot break API services.
-- Simplicity: one folder, one compose project, one lifecycle.
-- Security: `.env` stays on EC2 and is not written by CI.
 
 ## One-Time EC2 Setup
 
@@ -26,7 +20,7 @@ newgrp docker
 mkdir -p /home/ubuntu/resinly
 cd /home/ubuntu
 if [ ! -d /home/ubuntu/resinly/.git ]; then
-  git clone https://github.com/ecgregorio/Resinly.git resinly
+  git clone https://github.com/ecgregorio/resinly.git resinly
 fi
 
 # 4) Create runtime directories/files
