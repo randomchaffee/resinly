@@ -5,17 +5,19 @@
 ![genshin.py](https://img.shields.io/badge/genshin.py-1.7.24-2E8B57)
 ![Last Commit](https://img.shields.io/github/last-commit/ecgregorio/Resinly)
 
-Resinly is a Discord bot for tracking resin in Genshin Impact.
+Resinly is a Discord utility bot for tracking resin in Genshin Impact.
 
 ## Invite Link
 Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=1481178070114238506&permissions=274877975552&integration_type=0&scope=bot+applications.commands) to your Discord server!
 
 ## What It Does
 - Stores each user's UID.
+- Stores a separate HSR UID for Trailblaze Power checks.
 - Supports per-user HoYoLab cookies.
 - Checks resin on an interval.
 - Sends a DM when resin is full.
 - Avoids duplicate full notifications until resin drops below full again.
+- Shows current event banner details with featured 5-star and 4-star items.
 
 ## Stack
 - Python
@@ -27,12 +29,16 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 - `!setuid <uid>`
 - `!myuid`
 - `!resin`
+- `!sethsruid <uid>`
+- `!myhsruid`
+- `!power`
+- `!banner`
 - `!notify on|off`
 - `!setcookies <ltuid_v2> <ltoken_v2>` (DM only)
 - `!clearcookies`
 
 ## Slash Setup
-- `/setup` opens a private setup flow (ephemeral button + modal) for UID and cookie input.
+- `/setup` opens a private setup flow (ephemeral button + modal) for UID (for genshin initially, use !sethsruid for setting your HSR UID) and cookie input.
 
 ## Finding Your HoYoLab Cookies
 
