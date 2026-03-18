@@ -2,7 +2,8 @@ import discord
 import os
 import genshin
 
-import re, html
+import re
+import html
 
 from storage.storage import (
     load_subscriptions,
