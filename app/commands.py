@@ -2,6 +2,8 @@ import discord
 import os
 import genshin
 
+import re, html
+
 from storage.storage import (
     load_subscriptions,
     save_subscriptions,
@@ -18,6 +20,29 @@ from app.bot_core import (
 
 # consts
 default_genshin_uid = os.getenv('GENSHIN_UID')
+
+### --- Helpers --- ###
+# parses tags sent by get_banner_details
+def clean_banner_content(raw: str, limit: int = 1000) -> str:
+    text = html.unescape(raw or "")
+    text = re.sub(r"<br\s/?", "\n", text, flags=re.IGNORECASE)
+    text = re.sub(r"<color=[^>]+>(.?)</color>",r"**\1",text, flags=re.IGNORECASE | re.DOTALL)
+    text = re.sub(r"<[^>]+>","",text) # strip any remaining tags
+    text = re.sub(r"\n{3,}","\n\n", text).strip()
+    
+    if len(text) > limit:
+        text = text[:limit - 1].rstrip() + "..."
+        
+    return text or "No banner description available."
+
+def pick_preferred_banner(banners):
+    # prefer event banner
+    for b in banners:
+        if str(getattr(b, "date_range", "")).lower() != "permanent":
+            return b
+    
+    # return standard if not available for some reason
+    return banners[0]
 
 ### --- Commands --- ###
 # ping
@@ -152,7 +177,7 @@ async def clearcookies(ctx):
     
 # show current banner in genshin
 @bot.command()
-async def banner(ctx):
+async def selected(ctx):
     # use per-user credential flow just like in !resin
     data = load_subscriptions()
     user_id = str(ctx.author.id)
@@ -174,24 +199,45 @@ async def banner(ctx):
             await ctx.send("No banners found.")
             return
         
-        # extract banner info
-        banner = banners[0]
-        embed = discord.Embed(
-            title=f"{banner.title} ({banner.banner_type_name})",
-            description=banner.content,
+        # get banner info (1 for now)
+        selected = pick_preferred_banner(banners)
+        
+        main_embed = discord.Embed(
+            title=f"{selected.title} ({selected.banner_type_name})",
+            description=clean_banner_content(selected.content),
             color=discord.Color.blue()
         )
+        
         # send a discord embed with banner details (+ graphics)
-        embed.add_field(name="Banner Duration", value=banner.date_range, inline=False)
+        main_embed.add_field(name="Banner Duration", value=selected.date_range, inline=False)
         
         # feature 5s and 4s items
-        if banner.r5_up_items:
-            r5_names = ", ".join([item.name for item in banner.r5_up_items])
-            embed.add_field(name="5★ Featured", value=r5_names, inline=False)
-        if banner.r4_up_items:
-            r4_names = ", ".join([item.name for item in banner.r4_up_items])
-            embed.add_field(name="4★ Featured", value=r4_names, inline=False)
+        if selected.r5_up_items:
+            r5_names = ", ".join([item.name for item in selected.r5_up_items])
+            main_embed.add_field(name="5★ Featured", value=r5_names, inline=False)
+            first_r5_icon = getattr(selected.r5_up_items[0], "icon", None)
+            
+            if first_r5_icon:
+                main_embed.set_thumbnail(url=first_r5_icon)
+            
+        if selected.r4_up_items:
+            r4_names = ", ".join([item.name for item in selected.r4_up_items])
+            main_embed.add_field(name="4★ Featured", value=r4_names, inline=False)
         
-        await ctx.send(embed=embed)
+        preview_embeds = []
+        for item in list(selected.r5_up_items)[:2] + list(selected.r4_up_items)[:2]:
+            icon_url = getattr(item, "icon", None)
+            if not icon_url:
+                continue
+            
+            item_embed = discord.Embed(
+                title=item.name,
+                description=f"{getattr(item, 'type', 'Unknown')} • {getattr(item, 'element', 'N/A')}",
+                color=discord.Color.gold() if item in selected.r5_up_items else discord.Color.blurple(),
+            )
+            item_embed.set_thumbnail(url=icon_url)
+            preview_embeds.append(item_embed)
+            
+        await ctx.send(embed=[main_embed] + preview_embeds[:4])
     except Exception as e:
         await ctx.send(f"Error fetching banner: {type(e).__name__}")
