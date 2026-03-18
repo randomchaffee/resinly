@@ -17,7 +17,7 @@ async def on_ready():
         return
     print(f"We are ready to go in, {bot.user.name}")
 
-    await bot.change_presence(status=discord.Status.idle, activity=discord.CustomActivity(name="/setup | !resin"))
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Game(name="/setup | !resin"))
     
     # sync slash commands
     try:
