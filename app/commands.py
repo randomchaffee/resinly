@@ -1,5 +1,6 @@
 import discord
 import os
+import genshin
 
 from storage.storage import (
     load_subscriptions,
@@ -168,7 +169,7 @@ async def banner(ctx):
         client = build_genshin_client(user_ltuid, user_ltoken)
         
         # call await client.get_banner_details()
-        banners = await client.get_banner_details()
+        banners = await client.get_banner_details(game=genshin.Game.GENSHIN)
         if not banners:
             await ctx.send("No banners found.")
             return
@@ -188,7 +189,7 @@ async def banner(ctx):
             r5_names = ", ".join([item.name for item in banner.r5_up_items])
             embed.add_field(name="5★ Featured", value=r5_names, inline=False)
         if banner.r4_up_items:
-            r4_names = ", ".join([item.name for item in banner.r5_up_items])
+            r4_names = ", ".join([item.name for item in banner.r4_up_items])
             embed.add_field(name="4★ Featured", value=r4_names, inline=False)
         
         await ctx.send(embed=embed)
