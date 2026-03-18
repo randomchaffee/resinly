@@ -209,10 +209,15 @@ async def banner(ctx):
         
         # get banner info (1 for now)
         selected = pick_preferred_banner(banners)
-        selected_title = getattr(selected, "title", "Unknown Banner")
+        
+        raw_title = getattr(selected, "title", "Unknown Banner")
+        selected_title = re.sub(r"<color.*?>(.*?)</color>", r"\1", raw_title, flags=re.IGNORECASE | re.DOTALL)
+        selected_title = re.sub(r"<[^>]+>", "", selected_title).strip()
+        
         selected_type_name = getattr(selected, "banner_type_name", "Unknown Type")
         selected_content = clean_banner_content(getattr(selected, "content", ""))
         selected_date_range = getattr(selected, "date_range", "Unknown")
+        
         r5_items = list(getattr(selected, "r5_up_items", []) or [])
         r4_items = list(getattr(selected, "r4_up_items", []) or [])
         
