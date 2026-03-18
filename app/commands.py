@@ -207,8 +207,30 @@ async def banner(ctx):
             await ctx.send("No banners found.")
             return
         
-        # get banner info (1 for now)
+        # get banner info
         selected = pick_preferred_banner(banners)
+        
+        # merge 5-star items across active event wish banners
+        character_event_banners = [
+            b for b in banners
+            if getattr(b, "banner_type_name", "") == "Character Event Wish"
+            and str(getattr(b, "date_range", "")).lower() != "permanent"
+        ]
+        if not character_event_banners:
+            character_event_banners = [selected]
+        
+        r5_items = []
+        seen_r5_names = set()
+        
+        for b in character_event_banners:
+            for item in list(getattr(b, "r5_up_items", []) or []):
+                name = getattr(item, "name", "Unknown")
+                if name not in seen_r5_names:
+                    seen_r5_names.add(name)
+                    r5_items.append(item)
+        
+        # keep 4-star list from selected banner
+        r4_items = list(getattr(selected, "r4_up_items", []) or [])
         
         raw_title = getattr(selected, "title", "Unknown Banner")
         selected_title = re.sub(r"<color.*?>(.*?)</color>", r"\1", raw_title, flags=re.IGNORECASE | re.DOTALL)
@@ -217,9 +239,6 @@ async def banner(ctx):
         selected_type_name = getattr(selected, "banner_type_name", "Unknown Type")
         selected_content = clean_banner_content(getattr(selected, "content", ""))
         selected_date_range = getattr(selected, "date_range", "Unknown")
-        
-        r5_items = list(getattr(selected, "r5_up_items", []) or [])
-        r4_items = list(getattr(selected, "r4_up_items", []) or [])
         
         main_embed = discord.Embed(
             title=f"{selected_title} ({selected_type_name})",
