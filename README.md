@@ -74,7 +74,6 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 - Resinly does not ask users to post cookies in public channels.
 - Cookie setup is DM-only or via private slash modal flow.
 - User cookies are encrypted at rest before being written to disk.
-- Secrets are explicitly intended to stay local and are excluded from git.
 
 ## Operational Notes
 - If a HoYoLab cookie is expired, user resin checks may fail until cookies are updated.
