@@ -303,20 +303,33 @@ async def banner(ctx):
         # keep 4-star list from selected banner
         r4_items = list(getattr(selected, "r4_up_items", []) or [])
         
-        raw_title = getattr(selected, "title", "Unknown Banner")
-        selected_title = re.sub(r"<color.*?>(.*?)</color>", r"\1", raw_title, flags=re.IGNORECASE | re.DOTALL)
-        selected_title = re.sub(r"<[^>]+>", "", selected_title).strip()
+        # collect all unique event wish names from character_event_banners
+        event_titles = []
+        for b in character_event_banners:
+            raw_title = getattr(b, "title", "Unknown Banner")
+            clean_title = re.sub(r"<color.*?>(.*?)</color>", r"\1", raw_title, flags=re.IGNORECASE | re.DOTALL)
+            clean_title = re.sub(r"<[^>]+>", "", clean_title).strip()
+            event_titles.append(clean_title)
+        event_titles = list(dict.fromkeys(event_titles))
         
         selected_type_name = getattr(selected, "banner_type_name", "Unknown Type")
         selected_date_range = getattr(selected, "date_range", "Unknown")
         
         # extract names of the 5-star characters, then join
         r5_names_list = [getattr(item, "name", "Unknown") for item in r5_items[:2]]
-        if r5_names_list:
-            featured_title = " & ".join(r5_names_list)
-            title = f'{selected_title} ({selected_type_name}) - {featured_title}'
+
+        if event_titles:
+            event_title_str = ' & '.join(event_titles)
+            if r5_names_list:
+                featured_title = " & ".join(r5_names_list)
+                title = f'{event_title_str} ({selected_type_name}) - {featured_title}'
+            else: title = f'{event_title_str} ({selected_type_name})'
         else:
-            title = f'{selected_title} ({selected_type_name})'
+            if r5_names_list:
+                featured_title = ' & '.join(r5_names_list)
+                title = f'{event_titles} ({selected_type_name}) - {featured_title}'
+            else:
+                title = f'{event_titles} ({selected_type_name})'
         
         main_embed = discord.Embed(
             title=title,
