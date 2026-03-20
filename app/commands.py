@@ -323,7 +323,8 @@ async def banner(ctx):
             if r5_names_list:
                 featured_title = " & ".join(r5_names_list)
                 title = f'{event_title_str} ({selected_type_name}) - {featured_title}'
-            else: title = f'{event_title_str} ({selected_type_name})'
+            else: 
+                title = f'{event_title_str} ({selected_type_name})'
         else:
             if r5_names_list:
                 featured_title = ' & '.join(r5_names_list)
