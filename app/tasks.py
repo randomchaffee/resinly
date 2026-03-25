@@ -2,6 +2,8 @@ from discord.ext import tasks
 from datetime import datetime
 from datetime import timezone
 import os
+import discord
+import asyncio
 
 from app.bot_core import (
     bot
@@ -13,6 +15,69 @@ from storage.storage import (
     build_genshin_client,
 )
 
+async def _send_embed_safe(channel, embed):
+    try:
+        await channel.send(embed=embed)
+    except Exception:
+        pass
+
+async def send_daily_leaderboards(data: dict, prev_date: str, top: int = 10):
+    guild_config = data.get("_guilds", {})
+    for guild in bot.guilds:
+        # prepare entries for specific guild
+        member_ids = {str(m.id) for m in guild.members}
+        entries = []
+        for discord_user_id, state in data.items():
+            if discord_user_id == "_meta" or discord_user_id == "_guilds":
+                continue
+            if discord_user_id not in member_ids:
+                continue
+            spent = int(state.get("daily_spent", 0))
+            member = guild.get_member(int(discord_user_id))
+            try:
+                if member:
+                    display = member.display_name
+                    mention = member.mention
+                else:
+                    user = await bot.fetch_user(int(discord_user_id))
+                    display = getattr(user, "name", discord_user_id)
+                    mention = f"<@{discord_user_id}>"
+            except Exception:
+                display = discord_user_id
+                mention = f"<@{discord_user_id}>"
+            
+            entries.append((spent, display, mention))
+
+        if not entries:
+            continue
+        
+        entries.sort(key=lambda e: e[0], reverse=True)
+        embed = discord.Embed(
+            title=f"Resin Leaderboard - {prev_date}",
+            description=f"Top {min(top, len(entries))} - {guild.name}",
+            color=discord.Color.gold(),
+        )
+        for idx, (spent, display, mention) in enumerate(entries[:top], start=1):
+            embed.add_field(name=f"{idx}. {display}", value=f"{mention} - {spent} resin 🌙", inline=False)
+        
+        # how this works is:
+        # determine channel: per-guild config -> system_channel -> first writable text channel
+        channel = None
+        cfg = guild_config.get(str(guild.id), {})
+        ch_id = cfg.get("leaderboard_channel")
+        if ch_id:
+            channel = guild.get_channel(int(ch_id))
+        if channel is None:
+            channel = guild.system_channel
+        if channel is None:
+            for c in guild.text_channels:
+                if c.permissions_for(guild.me).send_messages:
+                    channel = c
+                    break
+        
+        if channel:
+            # fire and forget send lmao
+            asyncio.create_task(_send_embed_safe(channel, embed))
 # resin loop
 
 # load .env file
