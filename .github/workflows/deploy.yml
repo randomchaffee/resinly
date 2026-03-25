@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to EC2
+      - name: Deploy to EC2 (DO actually)
         uses: appleboy/ssh-action@v1.2.0
         env:
           EC2_BOT_REPO_DIR: ${{ secrets.EC2_BOT_REPO_DIR }}
