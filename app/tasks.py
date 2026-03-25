@@ -105,6 +105,7 @@ async def check_one_user(discord_user_id: str, state: dict):
         return
     
     # compute spent resin since last check
+    state.setdefault("daily_spent", 0)
     previous = int(state.get("last_resin", notes.current_resin))
     current = int(notes.current_resin)
     spent = max(0, previous - current)
@@ -144,11 +145,17 @@ async def resin_loop():
     today = datetime.now(timezone.utc).date().isoformat()
     meta = data.setdefault("_meta", {})
     if meta.get("daily_reset_date") != today:
+        prev_date = meta.get("daily_reset_date", today)
+        # send leaderboards for prev_date using curr data
+        # (that means yesterday's totals)
+        await send_daily_leaderboards(data, prev_date)
+        
         for discord_user_id in list(data.keys()):
             if discord_user_id == "_meta":
                 continue
             state = data[discord_user_id]
             state["daily_spent"] = 0
+            state.pop("last_resin", None)
         meta["daily_reset_date"] = today
     
     for discord_user_id, state in data.items():
