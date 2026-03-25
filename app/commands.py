@@ -5,6 +5,9 @@ import genshin
 import re
 import html
 
+from discord.ext import commands
+from typing import Optional
+
 from storage.storage import (
     load_subscriptions,
     save_subscriptions,
@@ -417,3 +420,30 @@ async def leaderboard(ctx, top: int = 10):
         embed.add_field(name=f"{idx}. {display}", value=f"{mention} — {spent} resin 🌙", inline=False)
 
     await ctx.send(embed=embed)
+
+### Admin Commands ###
+# !setleaderboardchannel
+@bot.command()
+@commands.has_guild_permissions(administrator=True)
+async def setleaderboardchannel(ctx, channel: Optional[discord.TextChannel] = None):
+    """Set the channel used for daily leaderboard posts (needs perms (admin))"""
+    data = load_subscriptions()
+    guilds = data.setdefault("_guilds", {})
+    guild_entry = guilds.setdefault(str(ctx.guild.id), {})
+    guild_entry["leaderboard_channel"] = str(channel.id if channel else ctx.channel.id)
+    save_subscriptions(data)
+    await ctx.send(f"Leaderboard channel set to {channel.mention if channel else ctx.channel.mention}")
+    
+#!clearleaderboardchannel
+@bot.command()
+@commands.has_guild_permissions(administrator=True)
+async def clearleaderboardchannel(ctx):
+    """Remove saved leaderboard channel for the guild."""
+    data = load_subscriptions()
+    guilds = data.get("_guilds", {})
+    if str(ctx.guild.id) in guilds:
+        guilds.pop(str(ctx.guild.id), None)
+        save_subscriptions(data)
+        await ctx.send("Leaderboard channel cleared.")
+    else:
+        await ctx.send("No leaderboard channel configured for this guild.")
