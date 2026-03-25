@@ -27,6 +27,8 @@ jobs:
             echo "Using bot directory: ${BOT_DIR}"
             cd "${BOT_DIR}"
 
+            git config --global --add safe.directory "${BOT_DIR}"
+
             git fetch origin main
             git pull origin main
 
