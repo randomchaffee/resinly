@@ -371,3 +371,49 @@ async def banner(ctx):
         await ctx.send(embeds=[main_embed] + preview_embeds[:5])
     except Exception as e:
         await ctx.send(f"Error fetching banner: {type(e).__name__}: {e}")
+
+# LEADERBOARDS #
+#!leaderboard
+@bot.command()
+async def leaderboard(ctx, top: int = 10):
+    # server context message
+    if ctx.guild is None:
+        await ctx.send("Run this command in a server to show the resin leaderboard.")
+        return
+        
+    data = load_subscriptions()
+    member_ids = {str(m.id) for m in ctx.guild.members}
+    entries = []
+    
+    for discord_user_id, state in data.items():
+        if discord_user_id == "_meta":
+            continue
+        if discord_user_id not in member_ids:
+            continue
+        
+        spent = int(state.get("daily_spent", 0))
+        try:
+            member = ctx.guild.get_member(int(discord_user_id))
+            if member:
+                display = member.display_name
+                mention = member.mention
+            else:
+                user = await bot.fetch_user(int(discord_user_id))
+                display = getattr(user, "name", discord_user_id)
+                mention = f"<@{discord_user_id}>"
+        except Exception:
+            display = discord_user_id
+            mention = discord_user_id
+        entries.append((spent, display, mention))
+    
+    # sort descending by resin spent
+    entries.sort(key=lambda e: e[0], reverse=True)
+    if not entries:
+        await ctx.send("No resin spending data for this server yet.")
+        return
+
+    embed = discord.Embed(title="Daily Resin Spent — Server Leaderboard", color=discord.Color.gold())
+    for idx, (spent, display, mention) in enumerate(entries[:top], start=1):
+        embed.add_field(name=f"{idx}. {display}", value=f"{mention} — {spent} resin 🌙", inline=False)
+
+    await ctx.send(embed=embed)
