@@ -74,8 +74,21 @@ async def resin_loop():
     data = load_subscriptions()
     if not data:
         return
+
+    # daily reset (UTC for the moment)
+    today = datetime.now(timezone.utc).date().isoformat()
+    meta = data.setdefault("_meta", {})
+    if meta.get("daily_reset_date") != today:
+        for discord_user_id in list(data.keys()):
+            if discord_user_id == "_meta":
+                continue
+            state = data[discord_user_id]
+            state["daily_spent"] = 0
+        meta["daily_reset_date"] = today
     
     for discord_user_id, state in data.items():
+        if discord_user_id == "_meta":
+            continue
         await check_one_user(discord_user_id, state)
         
     save_subscriptions(data)
