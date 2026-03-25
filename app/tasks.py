@@ -1,4 +1,6 @@
 from discord.ext import tasks
+from datetime import datetime
+from datetime import timezone
 import os
 
 from app.bot_core import (
@@ -36,6 +38,17 @@ async def check_one_user(discord_user_id: str, state: dict):
         notes = await client.get_genshin_notes(int(uid))
     except Exception:
         return
+    
+    # compute spent resin since last check
+    previous = int(state.get("last_resin", notes.current_resin))
+    current = int(notes.current_resin)
+    spent = max(0, previous - current)
+    
+    if spent > 0:
+        state["daily_spent"] = int(state.get("daily_spent", 0)) + spent
+        
+    # always update last_resin to current
+    state["last_resin"] = current
     
     # fetch resin full status (bool)
     is_full = notes.current_resin >= notes.max_resin
