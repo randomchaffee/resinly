@@ -37,7 +37,9 @@ jobs:
               exit 1
             fi
 
-            docker compose up -d --build
+            # remove any conflicting container, then start fresh
+            docker rm -f resinly-bot >/dev/null 2>&1 || true
+            docker compose up -d --build --force-recreate --remove-orphans
 
             sleep 10
 
