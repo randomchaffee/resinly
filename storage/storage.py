@@ -19,7 +19,7 @@ encryption_key = os.getenv("ENCRYPTION_KEY", "")
 DATA_PATH = Path("data/subscriptions.json")
 
 # get approval from .env
-USE_DB = os.getenv("USE_BD_STORAGE", "").lower() in ("1", "true", "yes")
+USE_DB = os.getenv("USE_DB_STORAGE", "").lower() in ("1", "true", "yes")
 
 _db_load = _db_save = None
 if USE_DB:
