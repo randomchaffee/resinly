@@ -3,6 +3,8 @@
 ![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
 ![discord.py](https://img.shields.io/badge/discord.py-2.7.1-5865F2?logo=discord&logoColor=white)
 ![genshin.py](https://img.shields.io/badge/genshin.py-1.7.24-2E8B57)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)
+![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=flat&logo=docker&logoColor=white)
 ![Version](https://img.shields.io/badge/Version-1.3.0-blue)
 ![Last Commit](https://img.shields.io/github/last-commit/ecgregorio/Resinly)
 
@@ -24,6 +26,8 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 - `discord.py`
 - `genshin.py`
 - `cryptography` (Fernet)
+- `PostgreSQL`
+- `Docker Compose`
 
 ## Slash Setup
 - `/setup` opens a private setup flow (ephemeral button + modal) for UID (for genshin initially, use !sethsruid for setting your HSR UID) and cookie input.
@@ -78,7 +82,7 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 ## Security & Privacy
 - Resinly does not ask users to post cookies in public channels.
 - Cookie setup is DM-only or via private slash modal flow.
-- User cookies are encrypted at rest before being written to disk.
+- User cookies are encrypted at rest before being written to the database.
 - The bot is open-source for auditability.
 
 ## Automated Daily Leaderboard (v1.3.0)
