@@ -18,6 +18,16 @@ encryption_key = os.getenv("ENCRYPTION_KEY", "")
 
 DATA_PATH = Path("data/subscriptions.json")
 
+# get approval from .env
+USE_DB = os.getenv("USE_BD_STORAGE", "").lower() in ("1", "true", "yes")
+
+_db_load = _db_save = None
+if USE_DB:
+    try:
+        from.db_adapter import load_subscriptions as _db_load, save_subscriptions as _db_save
+    except Exception:
+        _db_load = _db_save = None
+
 ### --- encrypt/decrypt helpers --- ###
 # get fernet key
 def get_fernet() -> Fernet:
@@ -35,6 +45,9 @@ def decrypt_value(ciphertext: str) -> str:
 
 # load subscriptions -> dict (also create {} if file missing/bad)
 def load_subscriptions() -> dict:
+    if USE_DB and _db_load:
+        return _db_load()
+    
     # create if missing
     if not DATA_PATH.exists():
         DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -55,6 +68,9 @@ def load_subscriptions() -> dict:
 
 # write pretty JSON
 def save_subscriptions(data: dict) -> None:
+    if USE_DB and _db_save:
+        return _db_save(data)
+    
     DATA_PATH.parent.mkdir(parents=True, exist_ok=True)
     DATA_PATH.write_text(json.dumps(data, indent=2), encoding='utf-8')
 
