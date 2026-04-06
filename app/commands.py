@@ -430,7 +430,7 @@ async def setleaderboardchannel(ctx, channel: Optional[discord.TextChannel] = No
     data = load_subscriptions()
     guilds = data.setdefault("_guilds", {})
     guild_entry = guilds.setdefault(str(ctx.guild.id), {})
-    guild_entry["leaderboard_channel"] = str(channel.id if channel else ctx.channel.id)
+    guild_entry["leaderboard_channel"] = channel.id if channel else ctx.channel.id
     save_subscriptions(data)
     await ctx.send(f"Leaderboard channel set to {channel.mention if channel else ctx.channel.mention}")
     
