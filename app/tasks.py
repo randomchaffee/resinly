@@ -150,7 +150,7 @@ async def resin_loop():
         # (that means yesterday's totals)
         await send_daily_leaderboards(data, prev_date)
         
-        # check _meta and _guilds (this was the source of corrupted data last time smh)
+        # check _meta and _guilds
         for discord_user_id in list(data.keys()):
             if discord_user_id in ("_meta", "_guilds"):
                 continue
