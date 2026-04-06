@@ -150,12 +150,14 @@ async def resin_loop():
         # (that means yesterday's totals)
         await send_daily_leaderboards(data, prev_date)
         
+        # check _meta and _guilds
         for discord_user_id in list(data.keys()):
-            if discord_user_id == "_meta":
+            if discord_user_id in ("_meta", "_guilds"):
                 continue
             state = data[discord_user_id]
             state["daily_spent"] = 0
             state.pop("last_resin", None)
+        
         meta["daily_reset_date"] = today
     
     for discord_user_id, state in data.items():
