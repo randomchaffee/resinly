@@ -1,8 +1,8 @@
 # Resinly
 
-![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)
-![discord.py](https://img.shields.io/badge/discord.py-2.7.1-5865F2?logo=discord&logoColor=white)
-![genshin.py](https://img.shields.io/badge/genshin.py-1.7.24-2E8B57)
+![Python](https://img.shields.io/badge/Python%2B-3776AB?logo=python&logoColor=white)
+![discord.py](https://img.shields.io/badge/discord.py-5865F2?logo=discord&logoColor=white)
+![genshin.py](https://img.shields.io/badge/genshin.py-2E8B57)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)
 ![Docker Compose](https://img.shields.io/badge/Docker_Compose-2496ED?style=flat&logo=docker&logoColor=white)
 ![Version](https://img.shields.io/badge/Version-1.3.0-blue)
