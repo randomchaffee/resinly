@@ -160,8 +160,11 @@ async def resin_loop():
         
         meta["daily_reset_date"] = today
     
+    # this loop should skip both _meta and _guilds
+    # there was a previous bug that caused the code to attempt
+    # processing the _guilds entry as a user since there was no check
     for discord_user_id, state in data.items():
-        if discord_user_id == "_meta":
+        if discord_user_id in ("_meta", "_guilds"):
             continue
         await check_one_user(discord_user_id, state)
         
