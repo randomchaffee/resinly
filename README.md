@@ -35,6 +35,8 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 ## User Commands
 - `!setuid <uid>` — set your UID
 - `!myuid` — show your linked UID
+- `!accounts` (or `!genshin`) — DM your linked HoYoLab game account details
+- `!stats` — show nickname, Adventure Rank, and server for linked accounts
 - `!resin` — show current resin and status
 - `!sethsruid <uid>` — set your HSR UID (Trailblaze)
 - `!myhsruid` — show linked HSR UID
@@ -108,4 +110,3 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 
 See the repo issues for more details and planned features.
 (If its empty im still working on it)
-
