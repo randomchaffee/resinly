@@ -16,5 +16,4 @@ discord.log
 # local bot state (contains encrypted user data)
 data/subscriptions.json
 
-# vscode
-.vscode/
+/data/backups
