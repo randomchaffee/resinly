@@ -331,7 +331,8 @@ async def genshinstats(ctx, server: str):
         return
 
     try:
-        profile = await client.get_full_genshin_user(int(account.uid))
+        profile = await client.get_genshin_user(int(account.uid))
+        abyss = await client.get_genshin_spiral_abyss(int(account.uid), previous=False)
     except genshin.GenshinException as error:
         await ctx.send(
             f"Could not fetch Genshin stats for the `{requested_server}` server. "
@@ -343,7 +344,6 @@ async def genshinstats(ctx, server: str):
         return
 
     stats_data = profile.stats
-    abyss = profile.abyss.current
     nickname = getattr(account, "nickname", "Unknown")
     level = getattr(account, "level", "Unknown")
     embed = discord.Embed(
