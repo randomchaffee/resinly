@@ -165,8 +165,111 @@ async def myuid(ctx):
     if not uid: 
         await ctx.send("No UID saved yet. Use `!setuid <your_uid>`.")
         return
-    
+
     await ctx.send(f"Your saved UID is `{uid}`")
+
+# accounts - show the user's linked HoYoLab game accounts
+@bot.command(aliases=["genshin"])
+async def accounts(ctx):
+    data = load_subscriptions()
+    user_id = str(ctx.author.id)
+    state = data.get(user_id, {})
+
+    if "ltuid_v2" not in state or "ltoken_v2" not in state:
+        await ctx.send("No HoYoLab cookies found. Use `/setup` first.")
+        return
+
+    try:
+        user_ltuid = decrypt_value(state["ltuid_v2"])
+        user_ltoken = decrypt_value(state["ltoken_v2"])
+        client = build_genshin_client(user_ltuid, user_ltoken)
+        linked_accounts = await client.get_game_accounts()
+    except genshin.GenshinException as error:
+        await ctx.send(
+            "Could not fetch your game accounts. Verify that your HoYoLab cookies "
+            f"are valid. Details: {type(error).__name__}"
+        )
+        return
+    except Exception as error:
+        await ctx.send(f"Could not fetch your game accounts: {type(error).__name__}")
+        return
+
+    if not linked_accounts:
+        await ctx.send("No linked game accounts were found.")
+        return
+
+    lines = ["**Your linked game accounts**", ""]
+    for account in linked_accounts:
+        lines.extend(
+            [
+                f"**Game:** {getattr(account, 'game', 'Unknown')}",
+                f"**Username (Nickname):** {getattr(account, 'nickname', 'Unknown')}",
+                f"**Adventure Rank (Level):** {getattr(account, 'level', 'Unknown')}",
+                f"**UID:** `{getattr(account, 'uid', 'Unknown')}`",
+                "-" * 30,
+            ]
+        )
+
+    try:
+        await ctx.author.send("\n".join(lines))
+    except discord.Forbidden:
+        await ctx.send("I could not DM you. Please enable direct messages and try again.")
+        return
+
+    await ctx.send("I sent your linked account information to you by DM.")
+
+# stats - show safe account details in the current channel
+@bot.command()
+async def stats(ctx):
+    data = load_subscriptions()
+    user_id = str(ctx.author.id)
+    state = data.get(user_id, {})
+
+    if "ltuid_v2" not in state or "ltoken_v2" not in state:
+        await ctx.send("No HoYoLab cookies found. Use `/setup` first.")
+        return
+
+    try:
+        user_ltuid = decrypt_value(state["ltuid_v2"])
+        user_ltoken = decrypt_value(state["ltoken_v2"])
+        client = build_genshin_client(user_ltuid, user_ltoken)
+        linked_accounts = await client.get_game_accounts()
+    except genshin.GenshinException as error:
+        await ctx.send(
+            "Could not fetch your account stats. Verify that your HoYoLab cookies "
+            f"are valid. Details: {type(error).__name__}"
+        )
+        return
+    except Exception as error:
+        await ctx.send(f"Could not fetch your account stats: {type(error).__name__}")
+        return
+
+    if not linked_accounts:
+        await ctx.send("No linked game accounts were found.")
+        return
+
+    embed = discord.Embed(
+        title=f"{ctx.author.display_name}'s Account Stats",
+        description=f"{len(linked_accounts)} linked account(s)",
+        color=discord.Color.blue(),
+    )
+
+    for index, account in enumerate(linked_accounts, start=1):
+        nickname = getattr(account, "nickname", None) or "Unknown"
+        level = getattr(account, "level", None)
+        server = getattr(account, "server_name", None) or "Unknown"
+
+        embed.add_field(
+            name=f"Account {index}",
+            value=(
+                f"**Nickname:** {nickname}\n"
+                f"**Adventure Rank:** {level if level is not None else 'Unknown'}\n"
+                f"**Server:** {server}"
+            ),
+            inline=False,
+        )
+
+    await ctx.send(embed=embed)
 
 # sethsruid <uid>
 @bot.command()
