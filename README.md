@@ -37,6 +37,7 @@ Feel free to add [Resinly](https://discord.com/oauth2/authorize?client_id=148117
 - `!myuid` — show your linked UID
 - `!accounts` (or `!genshin`) — DM your linked HoYoLab game account details
 - `!stats` — show nickname, Adventure Rank, and server for linked accounts
+- `!genshinstats <server>` — show detailed Genshin stats for one server
 - `!resin` — show current resin and status
 - `!sethsruid <uid>` — set your HSR UID (Trailblaze)
 - `!myhsruid` — show linked HSR UID

@@ -271,6 +271,147 @@ async def stats(ctx):
 
     await ctx.send(embed=embed)
 
+# genshinstats <server> - show detailed stats for one Genshin account
+@bot.command()
+async def genshinstats(ctx, server: str):
+    server_names = {
+        "america": "America",
+        "na": "America",
+        "europe": "Europe",
+        "eu": "Europe",
+        "asia": "Asia",
+        "tw": "TW,HK,MO",
+        "hk": "TW,HK,MO",
+        "mo": "TW,HK,MO",
+        "tw,hk,mo": "TW,HK,MO",
+    }
+    requested_server = server_names.get(server.strip().lower())
+
+    if requested_server is None:
+        await ctx.send(
+            "Invalid server. Choose one of: `America`, `Europe`, `Asia`, or `TW,HK,MO`."
+        )
+        return
+
+    data = load_subscriptions()
+    user_id = str(ctx.author.id)
+    state = data.get(user_id, {})
+
+    if "ltuid_v2" not in state or "ltoken_v2" not in state:
+        await ctx.send("No HoYoLab cookies found. Use `/setup` first.")
+        return
+
+    try:
+        user_ltuid = decrypt_value(state["ltuid_v2"])
+        user_ltoken = decrypt_value(state["ltoken_v2"])
+        client = build_genshin_client(user_ltuid, user_ltoken)
+        linked_accounts = await client.get_game_accounts()
+    except genshin.GenshinException as error:
+        await ctx.send(
+            "Could not fetch your Genshin accounts. Verify that your HoYoLab "
+            f"cookies are valid. Details: {type(error).__name__}"
+        )
+        return
+    except Exception as error:
+        await ctx.send(f"Could not fetch your Genshin accounts: {type(error).__name__}")
+        return
+
+    account = next(
+        (
+            item
+            for item in linked_accounts
+            if str(getattr(item, "server_name", "")).casefold()
+            == requested_server.casefold()
+        ),
+        None,
+    )
+
+    if account is None:
+        await ctx.send(f"No Genshin account was found on the `{requested_server}` server.")
+        return
+
+    try:
+        profile = await client.get_full_genshin_user(int(account.uid))
+    except genshin.GenshinException as error:
+        await ctx.send(
+            f"Could not fetch Genshin stats for the `{requested_server}` server. "
+            f"Details: {type(error).__name__}"
+        )
+        return
+    except Exception as error:
+        await ctx.send(f"Could not fetch Genshin stats: {type(error).__name__}")
+        return
+
+    stats_data = profile.stats
+    abyss = profile.abyss.current
+    nickname = getattr(account, "nickname", "Unknown")
+    level = getattr(account, "level", "Unknown")
+    embed = discord.Embed(
+        title=f"{nickname}'s Genshin Stats",
+        description=f"Server: **{requested_server}**",
+        color=discord.Color.blue(),
+    )
+    embed.add_field(
+        name="Account",
+        value=(
+            f"**Adventure Rank:** {level}\n"
+            f"**Characters:** {stats_data.characters}\n"
+            f"**Achievements:** {stats_data.achievements}\n"
+            f"**Days Active:** {stats_data.days_active}"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Spiral Abyss",
+        value=(
+            f"**Current Highest Floor:** {abyss.max_floor}\n"
+            f"**Stars:** {abyss.total_stars}\n"
+            f"**Battles:** {abyss.total_battles}\n"
+            f"**Wins:** {abyss.total_wins}"
+        ),
+        inline=False,
+    )
+    theater = stats_data.theater
+    if theater.unlocked and theater.has_data:
+        theater_status = f"Up to Act {theater.max_act}"
+        if not theater.has_detail_data:
+            theater_status += " (details unavailable)"
+    elif theater.unlocked:
+        theater_status = "No current-cycle data"
+    else:
+        theater_status = "Not unlocked"
+
+    embed.add_field(
+        name="Current Imaginarium Theater",
+        value=f"**Progress:** {theater_status}",
+        inline=False,
+    )
+
+    stygian = stats_data.stygian
+    if stygian.unlocked and stygian.has_data:
+        stygian_status = f"**Difficulty:** {stygian.difficulty}\n**Challenge:** {stygian.name}"
+    elif stygian.unlocked:
+        stygian_status = "No current-cycle data"
+    else:
+        stygian_status = "Not unlocked"
+
+    embed.add_field(
+        name="Current Stygian Onslaught",
+        value=stygian_status,
+        inline=False,
+    )
+    embed.add_field(
+        name="Exploration",
+        value=(
+            f"**Common Chests:** {stats_data.common_chests}\n"
+            f"**Exquisite Chests:** {stats_data.exquisite_chests}\n"
+            f"**Precious Chests:** {stats_data.precious_chests}\n"
+            f"**Luxurious Chests:** {stats_data.luxurious_chests}"
+        ),
+        inline=False,
+    )
+    await ctx.send(embed=embed)
+
 # sethsruid <uid>
 @bot.command()
 async def sethsruid(ctx, uid: str):
