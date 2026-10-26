@@ -342,8 +342,11 @@ async def genshinstats(ctx, server: str):
 
     await checkpoint(f"5/7 account selected: {requested_server}")
     try:
-        profile = await client.get_genshin_user(int(account.uid))
-        await checkpoint("6/7 Genshin profile fetched")
+        profile_data = await client._request_genshin_record(
+            "index",
+            int(account.uid),
+        )
+        await checkpoint("6/7 raw Genshin profile fetched")
     except genshin.GenshinException as error:
         await ctx.send(
             f"Could not fetch the Genshin profile at checkpoint 5/7: "
@@ -373,8 +376,14 @@ async def genshinstats(ctx, server: str):
         )
         return
 
-    stats_data = profile.stats
     try:
+        stats_data = profile_data.get("stats", {})
+        theater = stats_data.get("role_combat", {})
+        stygian = stats_data.get("hard_challenge", {})
+
+        def stat_value(name: str, alias: str, default: str = "Unknown"):
+            return stats_data.get(name, stats_data.get(alias, default))
+
         nickname = getattr(account, "nickname", "Unknown")
         level = getattr(account, "level", "Unknown")
         embed = discord.Embed(
@@ -386,9 +395,9 @@ async def genshinstats(ctx, server: str):
             name="Account",
             value=(
                 f"**Adventure Rank:** {level}\n"
-                f"**Characters:** {stats_data.characters}\n"
-                f"**Achievements:** {stats_data.achievements}\n"
-                f"**Days Active:** {stats_data.days_active}"
+                f"**Characters:** {stat_value('characters', 'avatar_number')}\n"
+                f"**Achievements:** {stat_value('achievements', 'achievement_number')}\n"
+                f"**Days Active:** {stat_value('days_active', 'active_day_number')}"
             ),
             inline=False,
         )
@@ -402,12 +411,13 @@ async def genshinstats(ctx, server: str):
             ),
             inline=False,
         )
-        theater = stats_data.theater
-        if theater.unlocked and theater.has_data:
-            theater_status = f"Up to Act {theater.max_act}"
-            if not theater.has_detail_data:
+        theater_unlocked = theater.get("is_unlock", theater.get("unlocked", False))
+        theater_has_data = theater.get("has_data", False)
+        if theater_unlocked and theater_has_data:
+            theater_status = f"Up to Act {theater.get('max_round_id', theater.get('max_act', 'Unknown'))}"
+            if not theater.get("has_detail_data", False):
                 theater_status += " (details unavailable)"
-        elif theater.unlocked:
+        elif theater_unlocked:
             theater_status = "No current-cycle data"
         else:
             theater_status = "Not unlocked"
@@ -418,12 +428,13 @@ async def genshinstats(ctx, server: str):
             inline=False,
         )
 
-        stygian = stats_data.stygian
-        if stygian.unlocked and stygian.has_data:
+        stygian_unlocked = stygian.get("is_unlock", stygian.get("unlocked", False))
+        if stygian_unlocked and stygian.get("has_data", False):
             stygian_status = (
-                f"**Difficulty:** {stygian.difficulty}\n**Challenge:** {stygian.name}"
+                f"**Difficulty:** {stygian.get('difficulty', 'Unknown')}\n"
+                f"**Challenge:** {stygian.get('name', 'Unknown')}"
             )
-        elif stygian.unlocked:
+        elif stygian_unlocked:
             stygian_status = "No current-cycle data"
         else:
             stygian_status = "Not unlocked"
@@ -436,10 +447,10 @@ async def genshinstats(ctx, server: str):
         embed.add_field(
             name="Exploration",
             value=(
-                f"**Common Chests:** {stats_data.common_chests}\n"
-                f"**Exquisite Chests:** {stats_data.exquisite_chests}\n"
-                f"**Precious Chests:** {stats_data.precious_chests}\n"
-                f"**Luxurious Chests:** {stats_data.luxurious_chests}"
+                f"**Common Chests:** {stat_value('common_chests', 'common_chest_number')}\n"
+                f"**Exquisite Chests:** {stat_value('exquisite_chests', 'exquisite_chest_number')}\n"
+                f"**Precious Chests:** {stat_value('precious_chests', 'precious_chest_number')}\n"
+                f"**Luxurious Chests:** {stat_value('luxurious_chests', 'luxurious_chest_number')}"
             ),
             inline=False,
         )
