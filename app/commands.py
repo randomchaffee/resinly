@@ -274,9 +274,6 @@ async def stats(ctx):
 # genshinstats <server> - show detailed stats for one Genshin account
 @bot.command()
 async def genshinstats(ctx, server: str):
-    async def checkpoint(message: str) -> None:
-        await ctx.send(f"[genshinstats checkpoint] {message}")
-
     server_names = {
         "america": "America",
         "na": "America",
@@ -296,7 +293,6 @@ async def genshinstats(ctx, server: str):
         )
         return
 
-    await checkpoint(f"1/7 server accepted: {requested_server}")
     data = load_subscriptions()
     user_id = str(ctx.author.id)
     state = data.get(user_id, {})
@@ -305,23 +301,11 @@ async def genshinstats(ctx, server: str):
         await ctx.send("No HoYoLab cookies found. Use `/setup` first.")
         return
 
-    await checkpoint("2/7 encrypted cookies found")
     try:
         user_ltuid = decrypt_value(state["ltuid_v2"])
         user_ltoken = decrypt_value(state["ltoken_v2"])
         client = build_genshin_client(user_ltuid, user_ltoken)
-        await checkpoint("3/7 Genshin client created")
         linked_accounts = await client.get_game_accounts()
-        await checkpoint(f"4/7 linked accounts fetched: {len(linked_accounts)}")
-        account_summary = ", ".join(
-            (
-                f"{getattr(item, 'game_biz', 'unknown')}/"
-                f"{getattr(item, 'server', 'unknown')}/"
-                f"{getattr(item, 'server_name', 'unknown')}"
-            )
-            for item in linked_accounts
-        )
-        await checkpoint(f"account metadata: {account_summary}")
     except genshin.GenshinException as error:
         await ctx.send(
             "Could not fetch your Genshin accounts. Verify that your HoYoLab "
@@ -330,8 +314,7 @@ async def genshinstats(ctx, server: str):
         return
     except Exception as error:
         await ctx.send(
-            f"Could not fetch your Genshin accounts after checkpoint 2/7: "
-            f"{type(error).__name__}"
+            f"Could not fetch your Genshin accounts: {type(error).__name__}"
         )
         return
 
@@ -365,38 +348,35 @@ async def genshinstats(ctx, server: str):
         await ctx.send(f"No Genshin account was found on the `{requested_server}` server.")
         return
 
-    await checkpoint(f"5/7 account selected: {requested_server}")
     try:
         profile_data = await client._request_genshin_record(
             "index",
             int(account.uid),
         )
-        await checkpoint("6/7 raw Genshin profile fetched")
     except genshin.GenshinException as error:
         await ctx.send(
-            f"Could not fetch the Genshin profile at checkpoint 5/7: "
+            "Could not fetch the Genshin profile. "
             f"{type(error).__name__}: {error}"
         )
         return
     except Exception as error:
         await ctx.send(
-            f"Could not parse the Genshin profile at checkpoint 5/7: "
+            "Could not parse the Genshin profile. "
             f"{type(error).__name__}: {error}"
         )
         return
 
     try:
         abyss = await client.get_genshin_spiral_abyss(int(account.uid), previous=False)
-        await checkpoint("7/7 current Spiral Abyss fetched")
     except genshin.GenshinException as error:
         await ctx.send(
-            f"Could not fetch current Spiral Abyss at checkpoint 6/7: "
+            "Could not fetch current Spiral Abyss. "
             f"Details: {type(error).__name__}"
         )
         return
     except Exception as error:
         await ctx.send(
-            f"Could not parse current Spiral Abyss at checkpoint 6/7: "
+            "Could not parse current Spiral Abyss. "
             f"{type(error).__name__}"
         )
         return
@@ -481,10 +461,7 @@ async def genshinstats(ctx, server: str):
         )
         await ctx.send(embed=embed)
     except Exception as error:
-        await ctx.send(
-            f"Could not build the stats embed after checkpoint 7/7: "
-            f"{type(error).__name__}"
-        )
+        await ctx.send(f"Could not build the stats embed: {type(error).__name__}")
 
 # sethsruid <uid>
 @bot.command()
