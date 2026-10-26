@@ -330,7 +330,8 @@ async def genshinstats(ctx, server: str):
         (
             item
             for item in linked_accounts
-            if str(getattr(item, "server_name", "")).casefold()
+            if str(getattr(item, "game_biz", "")).startswith("hk4e_")
+            and str(getattr(item, "server_name", "")).casefold()
             == requested_server.casefold()
         ),
         None,
@@ -350,13 +351,13 @@ async def genshinstats(ctx, server: str):
     except genshin.GenshinException as error:
         await ctx.send(
             f"Could not fetch the Genshin profile at checkpoint 5/7: "
-            f"{type(error).__name__}"
+            f"{type(error).__name__}: {error}"
         )
         return
     except Exception as error:
         await ctx.send(
             f"Could not parse the Genshin profile at checkpoint 5/7: "
-            f"{type(error).__name__}"
+            f"{type(error).__name__}: {error}"
         )
         return
 
