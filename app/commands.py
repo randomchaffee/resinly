@@ -313,6 +313,15 @@ async def genshinstats(ctx, server: str):
         await checkpoint("3/7 Genshin client created")
         linked_accounts = await client.get_game_accounts()
         await checkpoint(f"4/7 linked accounts fetched: {len(linked_accounts)}")
+        account_summary = ", ".join(
+            (
+                f"{getattr(item, 'game_biz', 'unknown')}/"
+                f"{getattr(item, 'server', 'unknown')}/"
+                f"{getattr(item, 'server_name', 'unknown')}"
+            )
+            for item in linked_accounts
+        )
+        await checkpoint(f"account metadata: {account_summary}")
     except genshin.GenshinException as error:
         await ctx.send(
             "Could not fetch your Genshin accounts. Verify that your HoYoLab "
@@ -326,13 +335,28 @@ async def genshinstats(ctx, server: str):
         )
         return
 
+    server_ids = {
+        "America": "os_usa",
+        "Europe": "os_euro",
+        "Asia": "os_asia",
+        "TW,HK,MO": "os_cht",
+    }
+    requested_server_id = server_ids[requested_server]
+
     account = next(
         (
             item
             for item in linked_accounts
-            if str(getattr(item, "game_biz", "")).startswith("hk4e_")
-            and str(getattr(item, "server_name", "")).casefold()
-            == requested_server.casefold()
+            if (
+                str(getattr(item, "game_biz", "")).startswith("hk4e_")
+                or str(getattr(item, "game", "")).casefold() == "genshin impact"
+            )
+            and (
+                str(getattr(item, "server", "")).casefold()
+                == requested_server_id.casefold()
+                or str(getattr(item, "server_name", "")).casefold()
+                == requested_server.casefold()
+            )
         ),
         None,
     )
