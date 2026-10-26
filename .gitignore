@@ -17,3 +17,6 @@ discord.log
 data/subscriptions.json
 
 /data/backups
+
+#vscode
+.vscode
